@@ -409,6 +409,8 @@ func (node *Node) Walk(
 	}
 }
 
+
+
 // checks if the zSubtree is complete with respect to
 // a min and max altitude
 func (node *Node) IsZComplete(
@@ -416,11 +418,31 @@ func (node *Node) IsZComplete(
 ) bool {
 	isComplete := true
 
-	leftChild := node.RawZBitString.LeftChild().BitString()
-	leftChildMin, leftChildMax := int16(leftChild.ZMin), int16(leftChild.ZMax())
 
-	rightChild := node.RawZBitString.LeftChild().BitString()
-	rightChildMin, rightChildMax := int16(rightChild.ZMin), int16(rightChild.ZMax())
+	left := node.RawZBitString.LeftChild().BitString()
+	if altitudeMin <= int16(left.ZMax()) && altitudeMax >= int16(left.ZMin) {
+		if node.zLeftChild == nil {
+			isComplete = isComplete && node.zLeftChildHash == nil
+		} else {
+			isComplete = isComplete && node.zLeftChild.IsZComplete(altitudeMin, altitudeMax)
+		}
+	}
+
+	right := node.RawZBitString.RightChild().BitString() // was LeftChild()
+	if altitudeMin <= int16(right.ZMax()) && altitudeMax >= int16(right.ZMin) {
+		if node.zRightChild == nil {
+			isComplete = isComplete && node.zRightChildHash == nil // was zRightChild
+		} else {
+			isComplete = isComplete && node.zRightChild.IsZComplete(altitudeMin, altitudeMax)
+		}
+	}
+
+	// ============================ OLD CODE (BUG1) ============================
+	//leftChild := node.RawZBitString.LeftChild().BitString()
+	//leftChildMin, leftChildMax := int16(leftChild.ZMin), int16(leftChild.ZMax())
+
+	//rightChild := node.RawZBitString.LeftChild().BitString()
+	//rightChildMin, rightChildMax := int16(rightChild.ZMin), int16(rightChild.ZMax())
 
 	// check for intersection of the 1 dimensional lines
 	// line1 = (a1, b1), line2 = (a2, b2)
@@ -428,6 +450,7 @@ func (node *Node) IsZComplete(
 	// b1 < a2 || b2 < a1 ----> not(b1 < a2 || b2 < a1) <=> b1 >= a2 && b2 >= a1
 	// from perspective of line1: <=> a1 <= b2 && b1 >= a2
 	// from perspective of line2: <=> a2 <= b1 && b2 >= a1
+	/*
 	if altitudeMin <= leftChildMax && altitudeMax >= leftChildMin {
 		// intersection with left child
 		if node.zLeftChild == nil {
@@ -449,6 +472,7 @@ func (node *Node) IsZComplete(
 			isComplete = node.zRightChild.IsZComplete(altitudeMin, altitudeMax)
 		}
 	}
+	*/
 
 	return isComplete
 }
@@ -499,8 +523,8 @@ func (node *Node) IsComplete(
 
 		rightChild := node.RawZBitString.RightChild().BitString()
 		rightChildMin, rightChildMax := int16(rightChild.ZMin), int16(rightChild.ZMax())
-		noIntersection := minAltitude > rightChildMin || maxAltitude < rightChildMax
-
+		// BUG2: noIntersection := minAltitude > rightChildMin || maxAltitude < rightChildMax
+		noIntersection := minAltitude > rightChildMax || maxAltitude < rightChildMin
 		isComplete = isComplete && (node.zRightChildHash == nil || noIntersection)
 	} else {
 		// check z subtree for completeness

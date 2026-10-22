@@ -1,0 +1,246 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>GeoPKI Admin Panel</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/demo/images/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/demo/images/favicon-32x32.png"
+    />
+    <link rel="stylesheet" href="admin.css" />
+
+    <!-- https://leafletjs.com/examples/quick-start/, used for drawing a certificate's coverage area -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+  </head>
+  <body>
+    <header>
+      <h1>GeoPKI Admin</h1>
+      <p class="hint">
+        Browse all certificates known to this server. Deleting a certificate
+        back-dates its expiration date &mdash; it is only actually removed
+        from the map (and stops appearing in query results) the next time an
+        operator triggers <code>/v1/release</code> on the server.
+      </p>
+    </header>
+
+    <section id="auth-bar">
+      <label for="admin-key">Insertion key</label>
+      <input
+        id="admin-key"
+        type="password"
+        autocomplete="off"
+        placeholder="server insertion key"
+      />
+      <button id="connect-button">Connect</button>
+      <button id="forget-key-button" title="Forget the key stored in this browser tab">
+        Forget key
+      </button>
+      <span id="auth-status"></span>
+    </section>
+
+    <section id="create-section" hidden>
+      <h2>Create certificate</h2>
+      <form id="create-form">
+        <fieldset>
+          <legend>General</legend>
+          <label
+            >Schema version
+            <input id="create-schema-version" type="number" value="3" min="1" required />
+          </label>
+          <label
+            >Certificate ID
+            <input id="create-cert-id" type="text" required />
+          </label>
+          <label
+            >Subject ID
+            <input id="create-subject-id" type="text" placeholder="verified.example.com" required />
+          </label>
+          <label
+            >Subject name
+            <input id="create-subject-name" type="text" placeholder="Display name" />
+          </label>
+          <label
+            >Critical extensions (comma separated)
+            <input id="create-critical" type="text" placeholder="optional extension names" />
+          </label>
+          <label
+            >Not valid before
+            <input id="create-not-valid-before" type="datetime-local" />
+          </label>
+          <label
+            >Not valid after
+            <input id="create-not-valid-after" type="datetime-local" required />
+          </label>
+          <label
+            >Min altitude (m)
+            <input id="create-altitude-min" type="number" value="-10" required />
+          </label>
+          <label
+            >Max altitude (m)
+            <input id="create-altitude-max" type="number" value="50" required />
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>WiFi</legend>
+          <label>SSID <input id="create-ssid" type="text" /></label>
+          <label
+            >Authentication modes (hold Ctrl/Cmd to select multiple)
+            <select id="create-auth-modes" multiple size="6">
+              <option value="open" selected>open</option>
+              <option value="owe">owe</option>
+              <option value="wpa2-personal">wpa2-personal</option>
+              <option value="wpa3-personal">wpa3-personal</option>
+              <option value="wpa2-enterprise">wpa2-enterprise</option>
+              <option value="wpa3-enterprise">wpa3-enterprise</option>
+              <option value="wpa3-enterprise-192">wpa3-enterprise-192</option>
+            </select>
+          </label>
+          <label
+            >Protected management frames
+            <select id="create-pmf">
+              <option value="">not specified</option>
+              <option value="optional">optional</option>
+              <option value="required">required</option>
+            </select>
+          </label>
+          <div id="create-enterprise-fields" hidden>
+            <label
+              >Federation
+              <input id="create-enterprise-federation" type="text" placeholder="eduroam" />
+            </label>
+            <label
+              >AAA realms (comma separated)
+              <input id="create-enterprise-realms" type="text" placeholder="ethz.ch, *.ethz.ch" />
+            </label>
+            <label
+              >EAP methods (method:phase2, comma separated)
+              <input id="create-enterprise-eap" type="text" placeholder="peap:mschapv2, ttls:pap" />
+            </label>
+            <label
+              >AAA server names (comma separated)
+              <input id="create-auth-server-names" type="text" />
+            </label>
+            <label
+              >AAA leaf SPKI pins (comma separated)
+              <input id="create-auth-server-spki" type="text" />
+            </label>
+            <label
+              >AAA CA SPKI pins (comma separated)
+              <input id="create-trusted-ca-fingerprints" type="text" />
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Import certificate JSON</legend>
+          <p class="hint">
+            Upload one certificate object or an array. This preserves advanced
+            fields such as multiple AAA domains exactly.
+          </p>
+          <input id="create-json-file" type="file" accept="application/json,.json" />
+          <button type="button" id="import-json-button">Import JSON</button>
+          <div id="json-import-status"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Captive portal (optional)</legend>
+          <p class="hint">
+            Add every hostname used by the portal. Pins are stored per domain.
+          </p>
+          <div id="create-portal-domains"></div>
+          <button type="button" id="add-portal-domain-button">
+            + Add portal domain
+          </button>
+        </fieldset>
+
+        <fieldset>
+          <legend>Coverage area</legend>
+          <p class="hint">
+            Click two opposite corners on the map to draw a rectangular
+            coverage area. Clicking again starts a new rectangle.
+          </p>
+          <div id="create-map"></div>
+          <div class="area-controls">
+            <button type="button" id="clear-area-button">Clear area</button>
+            <span id="area-status">No area set</span>
+          </div>
+        </fieldset>
+
+        <div id="create-actions">
+          <label
+            ><input type="checkbox" id="create-release-immediately" checked />
+            Release immediately (makes it queryable right away, but is a
+            slower server-side operation)</label
+          >
+          <button type="submit" id="create-submit-button">
+            Create certificate
+          </button>
+          <button type="button" id="create-cancel-button">Cancel</button>
+        </div>
+        <div id="create-status"></div>
+      </form>
+    </section>
+
+    <section id="table-section" hidden>
+      <div id="toolbar">
+        <span id="summary"></span>
+        <label>
+          Page size
+          <select id="page-size">
+            <option value="25">25</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+          </select>
+        </label>
+        <button id="new-cert-button">+ Create certificate</button>
+        <button id="refresh-button">Refresh</button>
+      </div>
+
+      <table id="cert-table">
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Certificate ID</th>
+            <th>Portal identity</th>
+            <th>WiFi SSID</th>
+            <th>Not valid after</th>
+            <th>Coordinates</th>
+            <th>Hash</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="cert-table-body"></tbody>
+      </table>
+
+      <div id="pager">
+        <button id="prev-page">&larr; Prev</button>
+        <span id="page-indicator"></span>
+        <button id="next-page">Next &rarr;</button>
+      </div>
+    </section>
+
+    <script src="admin.js"></script>
+  </body>
+</html>

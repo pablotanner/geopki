@@ -59,8 +59,13 @@ async function fetchCertificates(longitude, latitude, altitude, radius) {
   }
 
   for (const certificate of certificates) {
+    const domains = certificate.portal?.domains ?? [];
+    const domainNames = domains.map((domain) => domain.name);
+    const domainLabel =
+      domainNames.length > 0 ? domainNames.join(", ") : "No portal domain";
+
     // https://leafletjs.com/examples/geojson/
-    for (i = 0; i < certificate.areas.length; i++) {
+    for (let i = 0; i < certificate.areas.length; i++) {
       const area = certificate.areas[i];
       const [minAltitude, maxAltitude] = certificate.areas_altitude[i];
 
@@ -68,16 +73,14 @@ async function fetchCertificates(longitude, latitude, altitude, radius) {
         {
           type: "Feature",
           properties: {
-            domain: certificate.domain,
+            domains: domainNames,
             certificate_id: certificate.certificate_id,
             not_valid_after: certificate.not_valid_after,
           },
           geometry: area,
         },
         {
-          style: {
-            color: "#" + intToRGB(hashCode(certificate.domain)),
-          },
+          style: { color: "#" + intToRGB(hashCode(domainLabel)) },
         }
       );
 
@@ -86,7 +89,7 @@ async function fetchCertificates(longitude, latitude, altitude, radius) {
           const popup = L.DomUtil.create("div", "info-window");
           popup.innerHTML = `
       <ul class="feature-props">
-      <li><strong>Domain:</strong> <code>${certificate.domain}</code></li>
+          <li><strong>Portal domains:</strong> <code>${domainLabel}</code></li>
       <li><strong>Min Altitude:</strong> <time>${Math.round(
         minAltitude
       )}m</time></li>

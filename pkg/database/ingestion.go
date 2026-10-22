@@ -439,7 +439,7 @@ func RemoveExpiredCertificates(
 		}
 
 		query := fmt.Sprintf(
-			"UPDATE nodes_next SET certificate_hashes=%s WHERE bit_string_51=%s AND bit_string_15=%s",
+			"UPDATE nodes_next SET certificate_hashes=%s WHERE bit_string_51=b'%s' AND bit_string_15=b'%s'",
 			// for conflict update statement
 			hashes,
 			// xy bit string

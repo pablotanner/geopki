@@ -84,21 +84,101 @@ func (area *GeoCertArea) Loops() ([]*s2.Loop, error) {
 	return loops, nil
 }
 
-// this is a mock certificate format until proper x509 extensions are defined
-type GeoCertificate struct {
-	CertificateId string `json:"certificate_id"`
-	Domain        string `json:"domain"`
+// WiFiAuthMode describes how a client authenticates to the Wi-Fi network.
+type WiFiAuthMode string
 
-	// a list of areas associated with this certificate
-	Areas []GeoCertArea `json:"areas"`
-	// for each of the areas the minimum and maximum altitudes
-	AreasAltitude [][2]float64 `json:"areas_altitude"`
+const (
+	WiFiAuthOpen           WiFiAuthMode = "open"
+	WiFiAuthWPA2Personal   WiFiAuthMode = "wpa2-personal"
+	WiFiAuthWPA3Personal   WiFiAuthMode = "wpa3-personal"
+	WiFiAuthWPA2Enterprise WiFiAuthMode = "wpa2-enterprise"
+	WiFiAuthWPA3Enterprise WiFiAuthMode = "wpa3-enterprise"
+	WiFiAuthWPA3Enterprise192 WiFiAuthMode = "wpa3-enterprise-192"
+)
 
-	NotValidAfter string `json:"not_valid_after"`
+// EAPMethod identifies the inner authentication protocol used by enterprise Wi-Fi.
+type EAPMethod string
 
-	// the marshaled json string
-	MarshaledCert []byte `json:"-"`
+const (
+	EAPTLS  EAPMethod = "eap-tls"
+	EAPPEAP EAPMethod = "peap"
+	EAPTTLS EAPMethod = "ttls"
+)
+
+
+type WiFiIdentity struct {
+    SSID       string              `json:"ssid"`                  // required
+    SSIDShared bool                `json:"ssid_shared,omitempty"` // false = exclusive (default)
+    AuthModes  []WiFiAuthMode      `json:"auth_modes"`            // every mode the network advertises
+    PMF        PMFMode             `json:"pmf,omitempty"`         // "", "optional", "required"
+    Enterprise *EnterpriseIdentity `json:"enterprise,omitempty"`
 }
+
+type PMFMode string
+
+type PortalDomainRole string // "primary" | "delegate" | "api"
+
+type PortalDomain struct {
+    Name                    string           `json:"name"`
+    Role                    PortalDomainRole `json:"role"`
+    PinnedSPKIHashes        []string         `json:"pinned_spki_sha256"`              // required, per domain
+    CertificateFingerprints []string         `json:"certificate_sha256,omitempty"`
+}
+
+// PortalTLSIdentity describes the HTTPS identity of a captive portal. Normal
+// Web PKI validation remains required even when pins are present.
+type PortalTLSIdentity struct {
+    Domains []PortalDomain `json:"domains"`
+}
+
+// WiFiAuthMode: open, owe, wpa2-personal, wpa3-personal, wpa2-enterprise,
+//               wpa3-enterprise, wpa3-enterprise-192
+type EnterpriseIdentity struct {
+    Federation string      `json:"federation,omitempty"` // "eduroam", "govroam", ...; "" = closed network
+    AAA        []AAADomain `json:"aaa"`                  // may be empty only for a federation-only site
+}
+
+
+type GeoCertificate struct {
+    SchemaVersion int                `json:"schema_version"` // 3
+    CertificateId string             `json:"certificate_id"`
+    Subject       Subject            `json:"subject"`
+    Critical      []string           `json:"critical,omitempty"`
+    WiFi          WiFiIdentity       `json:"wifi"`
+    Portal        *PortalTLSIdentity `json:"portal,omitempty"`
+    Areas         []GeoCertArea      `json:"areas"`
+    AreasAltitude [][2]float64       `json:"areas_altitude"`
+    NotValidBefore string            `json:"not_valid_before,omitempty"`
+    NotValidAfter  string            `json:"not_valid_after"`
+    MarshaledCert  []byte            `json:"-"`
+}
+
+// Who the registration authority bound this claim to
+type Subject struct {
+    ID   string `json:"id"`             // stable registrant id, e.g. a verified domain
+    Name string `json:"name,omitempty"` // display only, never trusted for matching
+}
+
+
+// One set of users and the servers that authenticate them.
+type AAADomain struct {
+    Realms     []string        `json:"realms,omitempty"` // "ethz.ch" exact, "*.ethz.ch" subrealms
+    EAPMethods []EAPMethodSpec `json:"eap_methods,omitempty"`
+    Servers    []AuthServer    `json:"servers"`
+}
+
+type EAPMethodSpec struct {
+    Method EAPMethod `json:"method"`           // eap-tls, peap, ttls (open-ended)
+    Phase2 []string  `json:"phase2,omitempty"` // mschapv2, pap, gtc, ...
+}
+
+type AuthServer struct {
+    Names            []string `json:"names,omitempty"` // SAN dNSName, falling back to CN
+    PinnedSPKIHashes []string `json:"pinned_spki_sha256,omitempty"` // leaf key
+    CASPKIHashes     []string `json:"ca_spki_sha256,omitempty"`     // issuing / root CA key
+    CACertificates   []string `json:"ca_certificates,omitempty"`    // the CA certificates themselves, base64 DER, for supplicants that pin a CA
+}
+
 
 // unmarshals a geo certificate
 func UnmarshalGeoCertificate(marshaledCertificate []byte) (*GeoCertificate, error) {

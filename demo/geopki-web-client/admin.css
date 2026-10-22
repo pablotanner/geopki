@@ -1,0 +1,311 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 1.5rem;
+  font-family: sans-serif;
+  font-size: 16px;
+  color: #1a1a1a;
+  background: #f7f7f8;
+}
+
+header h1 {
+  margin: 0 0 0.25rem 0;
+}
+
+header .hint {
+  margin: 0 0 1.25rem 0;
+  max-width: 60rem;
+  color: #555;
+}
+
+header code {
+  background: #eee;
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+}
+
+section {
+  margin-bottom: 1.5rem;
+}
+
+#auth-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+#auth-bar input {
+  padding: 0.4rem 0.6rem;
+  min-width: 16rem;
+}
+
+button {
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  border: 1px solid #999;
+  border-radius: 0.3rem;
+  background: #fff;
+}
+
+button:hover {
+  background: #eee;
+}
+
+button.danger {
+  border-color: #b3261e;
+  color: #b3261e;
+}
+
+button.danger:hover {
+  background: #fbe9e7;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+#auth-status {
+  font-weight: bold;
+}
+
+#auth-status.ok {
+  color: #1a7f37;
+}
+
+#auth-status.error {
+  color: #b3261e;
+}
+
+#toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+#summary {
+  color: #555;
+}
+
+.muted {
+  color: #888;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  box-shadow: 0 0 0 1px #ddd;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+
+th {
+  background: #f0f0f1;
+  position: sticky;
+  top: 0;
+}
+
+td.hash,
+td code {
+  font-family: monospace;
+  font-size: 0.85rem;
+  word-break: break-all;
+}
+
+td.coordinates {
+  white-space: nowrap;
+}
+
+td.portal-identity {
+  min-width: 15rem;
+}
+
+.portal-domain {
+  display: grid;
+  gap: 0.15rem;
+  margin-bottom: 0.55rem;
+}
+
+.portal-domain:last-child {
+  margin-bottom: 0;
+}
+
+.portal-domain small {
+  color: #666;
+}
+
+.domain-role {
+  display: inline-block;
+  width: fit-content;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid #c7d7e5;
+  border-radius: 0.25rem;
+  color: #315b78;
+  font-size: 0.75rem;
+}
+
+.coordinates-note {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 0.2rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.badge.active {
+  background: #e6f4ea;
+  color: #1a7f37;
+}
+
+.badge.pending {
+  background: #fff4e5;
+  color: #a15c00;
+}
+
+#pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+#create-section {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+}
+
+#create-section h2 {
+  margin-top: 0;
+}
+
+#create-form fieldset {
+  border: 1px solid #e0e0e0;
+  border-radius: 0.4rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem 1rem;
+}
+
+#create-form legend {
+  font-weight: bold;
+  padding: 0 0.4rem;
+}
+
+#create-form label {
+  display: block;
+  margin-bottom: 0.6rem;
+}
+
+#create-portal-domains {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.portal-domain-row {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 0.35rem;
+  background: #fafafa;
+}
+
+.portal-domain-row-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.remove-portal-domain {
+  padding: 0.25rem 0.5rem;
+  color: #b3261e;
+}
+
+#create-form input[type="text"],
+#create-form input[type="number"],
+#create-form input[type="datetime-local"],
+#create-form select {
+  display: block;
+  margin-top: 0.2rem;
+  padding: 0.35rem 0.5rem;
+  width: 100%;
+  max-width: 28rem;
+}
+
+#create-enterprise-fields {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #ddd;
+}
+
+#create-map {
+  height: 20rem;
+  border: 1px solid #ccc;
+  border-radius: 0.3rem;
+  cursor: crosshair;
+}
+
+.area-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.6rem;
+}
+
+#area-status {
+  color: #555;
+}
+
+#area-status.set {
+  color: #1a7f37;
+  font-weight: bold;
+}
+
+#create-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+#create-actions label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 28rem;
+}
+
+#create-status {
+  margin-top: 0.75rem;
+  white-space: pre-wrap;
+}
+
+#create-status.error {
+  color: #b3261e;
+}
+
+#create-status.ok {
+  color: #1a7f37;
+}

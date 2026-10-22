@@ -1,0 +1,128 @@
+[
+  {
+    "name": "eth-overlap",
+    "lon": 8.549074999999998,
+    "lat": 47.37865,
+    "alt": 475,
+    "radius": 20
+  },
+  {
+    "name": "hb",
+    "lon": 8.5402,
+    "lat": 47.3779,
+    "alt": 415,
+    "radius": 50
+  },
+  {
+    "name": "stack-low",
+    "lon": 8.5446,
+    "lat": 47.4116,
+    "alt": 437,
+    "radius": 5
+  },
+  {
+    "name": "stack-high",
+    "lon": 8.5446,
+    "lat": 47.4116,
+    "alt": 507,
+    "radius": 5
+  },
+  {
+    "name": "stack-both",
+    "lon": 8.5446,
+    "lat": 47.4116,
+    "alt": 470,
+    "radius": 60
+  },
+  {
+    "name": "multi-uetli",
+    "lon": 8.4918,
+    "lat": 47.3497,
+    "alt": 870,
+    "radius": 20
+  },
+  {
+    "name": "multi-buerk",
+    "lon": 8.5413,
+    "lat": 47.3667,
+    "alt": 410,
+    "radius": 20
+  },
+  {
+    "name": "empty",
+    "lon": 9.2,
+    "lat": 46.1,
+    "alt": 1500,
+    "radius": 50
+  },
+  {
+    "name": "radius-0",
+    "lon": 8.549,
+    "lat": 47.3786,
+    "alt": 470,
+    "radius": 0
+  },
+  {
+    "name": "radius-max",
+    "lon": 8.549,
+    "lat": 47.3786,
+    "alt": 470,
+    "radius": 253
+  },
+  {
+    "name": "antimeridian-east",
+    "lon": 180,
+    "lat": 0,
+    "alt": 0,
+    "radius": 20
+  },
+  {
+    "name": "antimeridian-west",
+    "lon": -180,
+    "lat": 0,
+    "alt": 0,
+    "radius": 20
+  },
+  {
+    "name": "south-pole",
+    "lon": 0,
+    "lat": -90,
+    "alt": 2800,
+    "radius": 20
+  },
+  {
+    "name": "alt-min",
+    "lon": 8.549,
+    "lat": 47.3786,
+    "alt": -11000,
+    "radius": 10
+  },
+  {
+    "name": "alt-max",
+    "lon": 8.549,
+    "lat": 47.3786,
+    "alt": 21767,
+    "radius": 10
+  },
+  {
+    "name": "err-radius",
+    "lon": 8.549,
+    "lat": 47.3786,
+    "alt": 470,
+    "radius": 254
+  },
+  {
+    "name": "err-lon",
+    "lon": 180.0001,
+    "lat": 0,
+    "alt": 0,
+    "radius": 10
+  },
+  {
+    "name": "err-alt",
+    "lon": 8.549,
+    "lat": 47.3786,
+    "alt": -11001,
+    "radius": 10
+  }
+]

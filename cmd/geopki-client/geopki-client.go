@@ -10,6 +10,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"strings"
 	"time"
 
 	"geopki/pkg/comm"
@@ -21,6 +22,14 @@ const (
 	// the relative grid size used to compute bit strings based on the query volume
 	F_GROW = 1
 )
+
+func convertWiFiAuthModesToStrings (authModes []crypto.WiFiAuthMode) []string {
+	strs := make([]string, len(authModes))
+	for i, authMode := range authModes {
+		strs[i] = string(authMode)
+	}
+	return strs
+}
 
 func main() {
 	// CLI arguments described in the help messages below
@@ -195,14 +204,41 @@ func main() {
 
 	fmt.Printf("📡 Received %d certificates\n", len(response.GetCertificates()))
 
-	// iterate over received certificates and print their domain and id
+	// Parse and display the certificate policy in separate Wi-Fi and portal sections.
 	for _, rawCertificate := range response.GetCertificates() {
-		// TODO: later this will probably parse a x509 certificate
 		certificate, err := crypto.UnmarshalGeoCertificate(rawCertificate)
 		if err != nil {
 			log.Fatalf("❌ failed parsing certificate: %v\n", err)
 		}
 
-		fmt.Printf("    %s, %s\n", certificate.Domain, certificate.CertificateId)
+		fmt.Printf("\n    Certificate %s\n", certificate.CertificateId)
+		fmt.Printf("      Valid until: %s\n", certificate.NotValidAfter)
+
+		fmt.Printf("      Wi-Fi\n")
+		if len(certificate.WiFi.AuthModes) > 0 {
+			// multiple objects of type WiFiAuthMode are allowed in the AuthModes field, but only one is allowed in the AuthMode field.
+			//fmt.Printf("        Authentication modes: %s\n", strings.Join(certificate.WiFi.AuthModes, ", "))
+			// fix:  cannot use certificate.WiFi.AuthModes (variable of type []"geopki/pkg/crypto".WiFiAuthMode) as []string value in argument to strings.Join
+			fmt.Printf("        Authentication modes: %s\n", strings.Join(convertWiFiAuthModesToStrings(certificate.WiFi.AuthModes), ", "))
+		}
+		if certificate.WiFi.SSID != "" {
+			shared := "exclusive"
+			if certificate.WiFi.SSIDShared {
+				shared = "shared"
+			}
+			fmt.Printf("        SSID (%s): %s\n", shared, certificate.WiFi.SSID)
+		}
+		if len(certificate.Portal.Domains) > 0 {
+			fmt.Printf("      Captive portal\n")
+			for _, domain := range certificate.Portal.Domains {
+				fmt.Printf("        Domain: %s (role: %s)\n", domain.Name, domain.Role)
+				if len(domain.PinnedSPKIHashes) > 0 {
+					fmt.Printf("          Pinned SPKI SHA-256: %s\n", strings.Join(domain.PinnedSPKIHashes, ", "))
+				}
+			if len(domain.CertificateFingerprints) > 0 {
+					fmt.Printf("          Certificate SHA-256: %s\n", strings.Join(domain.CertificateFingerprints, ", "))
+				}
+			}
+		}
 	}
 }
