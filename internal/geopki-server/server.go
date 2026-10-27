@@ -109,6 +109,21 @@ func (env *EndpointHandlerEnv) newRequestHandler(
 			}
 			notFoundHandler(ctx)
 
+		// admin (for testing)
+		case "/v1/admin/certificates":
+			if ctx.IsGet() {
+				env.getAdminCertificates(ctx)
+				return
+			}
+			notFoundHandler(ctx)
+
+		case "/v1/admin/expire":
+			if ctx.IsPost() {
+				env.postAdminExpire(ctx)
+				return
+			}
+			notFoundHandler(ctx)
+
 		case "/demo":
 			ctx.Redirect("/demo/", fasthttp.StatusMovedPermanently)
 
